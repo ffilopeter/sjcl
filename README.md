@@ -32,3 +32,26 @@ Upgrade Guide
 Documentation
 ====
 The documentation is available [here](http://bitwiseshiftleft.github.io/sjcl/doc/)
+
+Build
+====
+Add `core/srp.js` file to the end of `SOURCES` in `config.mk` file.
+Then run this NodeJS script to build:
+
+```javascript
+// build-sjcl-srp.js
+const fs = require('fs');
+// 1) pull the SOURCES line from config.mk
+const mk = fs.readFileSync('config.mk','utf8');
+const files = mk.match(/^SOURCES\s*=\s*(.*)$/m)[1].trim().split(/\s+/);
+// 2) stitch them together
+let out = '"use strict";\n(function(){\nvar sjcl={};\n';
+for(const f of files){
+  out += fs.readFileSync(f,'utf8') + '\n';
+}
+out += `\nif(typeof module!=="undefined"&&module.exports)module.exports=sjcl;
+if(typeof define==="function")define([],()=>sjcl);
+})();\n`;
+fs.writeFileSync('sjcl-with-srp.js', out);
+console.log('🎉 Built sjcl-with-srp.js');
+```
